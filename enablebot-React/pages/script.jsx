@@ -1,15 +1,8 @@
 import React, { useState, useEffect, useRef } from "react"
 import Head from 'next/head';
-import bot from '/Users/rebec/Git-Projects/Projects/Enable-React-Bot/enablebot-React/public/bot.png';
-import user from '/Users/rebec/Git-Projects/Projects/Enable-React-Bot/enablebot-React/public/user.svg';
 
-function Header() {
-    return(
-        <head>
-            <title>New Enablebot</title>
-        </head>
-    );
-}
+const bot = "enablebot-React/public/bot.png"
+const user = "enablebot-React/public/user.png"
 
 function ChatStripe({ isAi, value, uniqueId }) {
     return (
@@ -34,6 +27,17 @@ function HomePage() {
     const handleChange = (e) => {
         setPrompt(e.target.value);
       };
+      function LoadingComponent() {
+        const loadingRef = useRef(null);
+    
+        useEffect(() => {
+            const element = loadingRef.current;
+            typeText(element, "Loading...");
+    
+            return () => clearInterval(loadInterval)
+        }, []);
+      return <div ref={loadingRef}>Loading</div>
+    }
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -45,20 +49,20 @@ function HomePage() {
         const botMessage = { id: uniqueId, value: '', isAi: true};
 
         setChatHistory([...chatHistory, newUserMessage, botMessage]);
-        
+        console.log(chatHistory)
         setPrompt('');
         
 
         let response
         try{
-        response = await fetch('Server', {
+        response = await fetch('/api/server', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ prompt }),
             });
-        
+        console.log(response)
         
         if (response.ok) {
             const data = await response.json();
@@ -79,41 +83,32 @@ function HomePage() {
     
         setLoading(false);
     };
-return (
-    <div>
-      <Header />
-      <form className="form" onSubmit={handleSubmit}>
-      <textarea
-          className="prompt"
-          rows="1"
-          cols="1" 
-          placeholder="Ask EnableBot..."
-          value={prompt}
-          onChange={handleChange}
-      ></textarea>
-      <button type="submit">Submit</button>
-    </form>
-      {loading ? loadingComponent() : null} {/* Conditionally render loading component */}
-      <div>
-        {chatHistory.map((message) => (
-          <ChatStripe key={message.id} isAi={message.isAi} value={message.value} uniqueId={message.id} />
-        ))}
+    return (
+      <div className="container mx-auto p-4">
+        <Head>
+          <title>New Enablebot</title>
+        </Head>
+        <form className="form flex flex-col items-center" onSubmit={handleSubmit}>
+          <textarea 
+            className="prompt border p-2 resize-none"
+            rows="1"
+            cols="1"
+            placeholder="Ask EnableBot..."
+            value={prompt}
+            onChange={handleChange}
+          ></textarea>
+          <button type="submit" className="bg-blue-500 text-white p-2 rounded mt-2" src="enablebot-React/public/send-message.png" >Submit</button>
+        </form>
+        {loading ? <LoadingComponent /> : null}
+        <div className="mt-4">
+          {chatHistory.map((message) => (
+            <ChatStripe key={message.id} isAi={message.isAi} value={message.value} uniqueId={message.id} />
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
 }
 
-function loadingComponent() {
-    const loadingRef = useRef(null);
-
-    useEffect(() => {
-        const element = loadingRef.current;
-        typeText(element, "Loading...");
-
-        return () => clearInterval(loadInterval)
-    }, []);
-  return <div ref={loadingRef}>Loading</div>
-}
 function typeText(element, text){
     let index = 0; 
     let interval = setInterval(() => {
@@ -131,8 +126,7 @@ function generateUniqueId() {
     const timestamp = Date.now();
     const randomNumber = Math.random();
     const hexadecimalString = randomNumber.toString(16);
-
     return `id-${timestamp}-${hexadecimalString}`;
 }
+
 export default HomePage;
-export {Header};
