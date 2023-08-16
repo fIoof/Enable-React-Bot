@@ -5,7 +5,7 @@ import {promisify} from 'util';
 const sleep = promisify(setTimeout);
 
 const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: "",
 });
 
 // dotenv.config();
